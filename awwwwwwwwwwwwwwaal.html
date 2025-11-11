@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forex Analysis Tool - Currency Pairs & Timeframes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(to right, #2c3e50, #4ca1af);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .logo i {
+            font-size: 32px;
+            margin-right: 15px;
+            background: white;
+            color: #3498db;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .main-content {
+            display: flex;
+            min-height: 700px;
+        }
+        
+        .input-section {
+            flex: 1;
+            padding: 25px;
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+        
+        .output-section {
+            flex: 2;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .section-title i {
+            margin-right: 10px;
+            color: #3498db;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+        
+        button {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 16px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: linear-gradient(to right, #2980b9, #1f639b);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            background: #e9ecef;
+        }
+        
+        .upload-area i {
+            font-size: 48px;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        
+        #imagePreview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .currency-pairs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .currency-pair {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .currency-pair:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+        }
+        
+        .currency-pair.selected {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+        
+        .pair-symbol {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .pair-name {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .timeframes {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .timeframe {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .timeframe:hover {
+            border-color: #3498db;
+        }
+        
+        .timeframe.selected {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .recommendation {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .buy {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .sell {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .hold {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+        
+        .confidence-meter {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .confidence-level {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .high-confidence {
+            background: linear-gradient(to right, #27ae60, #2ecc71);
+        }
+        
+        .medium-confidence {
+            background: linear-gradient(to right, #f39c12, #f1c40f);
+        }
+        
+        .low-confidence {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+        
+        .analysis-details {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .metric {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .positive {
+            color: #27ae60;
+        }
+        
+        .negative {
+            color: #e74c3c;
+        }
+        
+        .neutral {
+            color: #f39c12;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .factors-list {
+            margin-top: 20px;
+        }
+        
+        .factor {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .factor:last-child {
+            border-bottom: none;
+        }
+        
+        .factor-impact {
+            font-weight: bold;
+        }
+        
+        .high-impact {
+            color: #e74c3c;
+        }
+        
+        .medium-impact {
+            color: #f39c12;
+        }
+        
+        .low-impact {
+            color: #27ae60;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .currency-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .currency-flag {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #3498db;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .currency-details h3 {
+            margin-bottom: 5px;
+        }
+        
+        .currency-details p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .price-display {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .input-section {
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+            }
+            
+            .analysis-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .currency-pairs {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .currency-pairs, .timeframes {
+                grid-template-columns: 1fr;
+            }
+            
+            .analysis-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <h1>Forex Analysis Tool</h1>
+            </div>
+            <p>Advanced Currency Pair Analysis with Multiple Timeframes</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <div class="section-title">
+                    <i class="fas fa-cog"></i>
+                    <h2>Analysis Parameters</h2>
+                </div>
+                
+                <div class="form-group">
+                    <label>Select Currency Pair</label>
+                    <div class="currency-pairs">
+                        <div class="currency-pair selected" data-pair="EUR/USD">
+                            <div class="pair-symbol">EUR/USD</div>
+                            <div class="pair-name">Euro / US Dollar</div>
+                        </div>
+                        <div class="currency-pair" data-pair="GBP/USD">
+                            <div class="pair-symbol">GBP/USD</div>
+                            <div class="pair-name">British Pound / US Dollar</div>
+                        </div>
+                        <div class="currency-pair" data-pair="USD/JPY">
+                            <div class="pair-symbol">USD/JPY</div>
+                            <div class="pair-name">US Dollar / Japanese Yen</div>
+                        </div>
+                        <div class="currency-pair" data-pair="USD/CHF">
+                            <div class="pair-symbol">USD/CHF</div>
+                            <div class="pair-name">US Dollar / Swiss Franc</div>
+                        </div>
+                        <div class="currency-pair" data-pair="AUD/USD">
+                            <div class="pair-symbol">AUD/USD</div>
+                            <div class="pair-name">Australian Dollar / US Dollar</div>
+                        </div>
+                        <div class="currency-pair" data-pair="USD/CAD">
+                            <div class="pair-symbol">USD/CAD</div>
+                            <div class="pair-name">US Dollar / Canadian Dollar</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Select Timeframe</label>
+                    <div class="timeframes">
+                        <div class="timeframe selected" data-timeframe="1h">
+                            <div>1H</div>
+                            <div>1 Hour</div>
+                        </div>
+                        <div class="timeframe" data-timeframe="4h">
+                            <div>4H</div>
+                            <div>4 Hours</div>
+                        </div>
+                        <div class="timeframe" data-timeframe="1d">
+                            <div>1D</div>
+                            <div>1 Day</div>
+                        </div>
+                        <div class="timeframe" data-timeframe="1w">
+                            <div>1W</div>
+                            <div>1 Week</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Upload Chart Image</h3>
+                    <p>Drag & drop or click to upload</p>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                    <img id="imagePreview" alt="Image Preview">
+                </div>
+                
+                <div class="form-group">
+                    <label for="analysisType">Analysis Type</label>
+                    <select id="analysisType">
+                        <option value="technical">Technical Analysis</option>
+                        <option value="fundamental">Fundamental Analysis</option>
+                        <option value="sentiment">Sentiment Analysis</option>
+                        <option value="comprehensive" selected>Comprehensive Analysis</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="additionalData">Additional Parameters (Optional)</label>
+                    <textarea id="additionalData" rows="3" placeholder="Enter any additional trading parameters..."></textarea>
+                </div>
+                
+                <button id="analyzeBtn">
+                    <i class="fas fa-chart-bar"></i> Analyze Currency Pair
+                </button>
+            </div>
+            
+            <div class="output-section">
+                <div class="section-title">
+                    <i class="fas fa-poll"></i>
+                    <h2>Forex Analysis Results</h2>
+                </div>
+                
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="currency-info">
+                            <div class="currency-flag">EUR</div>
+                            <div class="currency-details">
+                                <h3>Euro / US Dollar</h3>
+                                <p>EUR/USD • 1H Timeframe</p>
+                            </div>
+                        </div>
+                        
+                        <div class="price-display" id="currentPrice">1.08542</div>
+                        
+                        <div class="recommendation buy" id="recommendation">
+                            <i class="fas fa-arrow-up"></i> BUY RECOMMENDATION
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Confidence Level: <span id="confidenceValue">78%</span></label>
+                            <div class="confidence-meter">
+                                <div class="confidence-level high-confidence" id="confidenceLevel" style="width: 78%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>Key Metrics</h3>
+                        <div class="analysis-details">
+                            <div class="metric">
+                                <div class="metric-value positive" id="priceChange">+0.42%</div>
+                                <div class="metric-label">24H Change</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value neutral" id="rsi">58.3</div>
+                                <div class="metric-label">RSI</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value positive" id="momentum">Bullish</div>
+                                <div class="metric-label">Momentum</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value positive" id="volatility">Low</div>
+                                <div class="metric-label">Volatility</div>
+                            </div>
+                        </div>
+                        
+                        <div class="factors-list">
+                            <div class="factor">
+                                <span>Support at 1.0800</span>
+                                <span class="factor-impact high-impact">Strong</span>
+                            </div>
+                            <div class="factor">
+                                <span>Resistance at 1.0900</span>
+                                <span class="factor-impact medium-impact">Medium</span>
+                            </div>
+                            <div class="factor">
+                                <span>EMA Alignment</span>
+                                <span class="factor-impact high-impact">Bullish</span>
+                            </div>
+                            <div class="factor">
+                                <span>MACD Signal</span>
+                                <span class="factor-impact medium-impact">Positive</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <h3>Price Chart Analysis</h3>
+                    <div class="chart-container">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="results-grid">
+                    <div class="result-card">
+                        <h3>Trade Setup</h3>
+                        <div class="form-group">
+                            <label>Entry Point</label>
+                            <input type="text" id="entryPoint" value="1.08300 - 1.08500" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Take Profit</label>
+                            <input type="text" id="takeProfit" value="1.09200" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Stop Loss</label>
+                            <input type="text" id="stopLoss" value="1.07800" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Risk/Reward Ratio</label>
+                            <input type="text" id="riskReward" value="1:2.5" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>Market Sentiment</h3>
+                        <div class="form-group">
+                            <label>Overall Sentiment</label>
+                            <div class="confidence-meter">
+                                <div class="confidence-level high-confidence" id="sentimentLevel" style="width: 72%;"></div>
+                            </div>
+                            <div style="text-align: center; margin-top: 5px;">Bullish</div>
+                        </div>
+                        
+                        <div class="factors-list">
+                            <div class="factor">
+                                <span>Institutional Bias</span>
+                                <span class="factor-impact high-impact">68% Long</span>
+                            </div>
+                            <div class="factor">
+                                <span>Retail Sentiment</span>
+                                <span class="factor-impact medium-impact">42% Long</span>
+                            </div>
+                            <div class="factor">
+                                <span>Economic Calendar</span>
+                                <span class="factor-impact low-impact">Neutral</span>
+                            </div>
+                            <div class="factor">
+                                <span>News Impact</span>
+                                <span class="factor-impact medium-impact">Positive</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Currency pair selection
+        document.querySelectorAll('.currency-pair').forEach(pair => {
+            pair.addEventListener('click', () => {
+                document.querySelectorAll('.currency-pair').forEach(p => {
+                    p.classList.remove('selected');
+                });
+                pair.classList.add('selected');
+                updateAnalysis();
+            });
+        });
+        
+        // Timeframe selection
+        document.querySelectorAll('.timeframe').forEach(timeframe => {
+            timeframe.addEventListener('click', () => {
+                document.querySelectorAll('.timeframe').forEach(t => {
+                    t.classList.remove('selected');
+                });
+                timeframe.classList.add('selected');
+                updateAnalysis();
+            });
+        });
+        
+        // Image upload functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const imageUpload = document.getElementById('imageUpload');
+        const imagePreview = document.getElementById('imagePreview');
+        
+        uploadArea.addEventListener('click', () => {
+            imageUpload.click();
+        });
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = '#e9ecef';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.background = '#f8f9fa';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = '#f8f9fa';
+            
+            if (e.dataTransfer.files.length) {
+                imageUpload.files = e.dataTransfer.files;
+                previewImage(e.dataTransfer.files[0]);
+            }
+        });
+        
+        imageUpload.addEventListener('change', () => {
+            if (imageUpload.files && imageUpload.files[0]) {
+                previewImage(imageUpload.files[0]);
+            }
+        });
+        
+        function previewImage(file) {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        // Chart initialization
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        const priceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+                datasets: [{
+                    label: 'EUR/USD',
+                    data: [1.0820, 1.0835, 1.0842, 1.0830, 1.0848, 1.0855, 1.0840, 1.0854],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Price'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Analysis functionality
+        document.getElementById('analyzeBtn').addEventListener('click', () => {
+            updateAnalysis();
+        });
+        
+        function updateAnalysis() {
+            const selectedPair = document.querySelector('.currency-pair.selected').getAttribute('data-pair');
+            const selectedTimeframe = document.querySelector('.timeframe.selected').getAttribute('data-timeframe');
+            const analysisType = document.getElementById('analysisType').value;
+            
+            // Simulate analysis process
+            document.getElementById('analyzeBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+            document.getElementById('analyzeBtn').disabled = true;
+            
+            // Update currency info
+            document.querySelector('.currency-details h3').textContent = getPairName(selectedPair);
+            document.querySelector('.currency-details p').textContent = `${selectedPair} • ${getTimeframeName(selectedTimeframe)}`;
+            document.querySelector('.currency-flag').textContent = selectedPair.split('/')[0];
+            
+            setTimeout(() => {
+                // Generate random results for demonstration
+                const recommendations = ['buy', 'sell', 'hold'];
+                const recommendation = recommendations[Math.floor(Math.random() * recommendations.length)];
+                
+                const confidence = Math.floor(Math.random() * 30) + 65; // 65-95%
+                const priceChange = (Math.random() * 1.5 - 0.3).toFixed(2); // -0.3% to +1.2%
+                const rsi = (Math.random() * 30 + 40).toFixed(1); // 40-70
+                const momentum = Math.random() > 0.5 ? 'Bullish' : 'Bearish';
+                const volatility = Math.random() > 0.7 ? 'High' : (Math.random() > 0.4 ? 'Medium' : 'Low');
+                const currentPrice = (1.08 + Math.random() * 0.01).toFixed(5);
+                
+                // Update UI with results
+                const recommendationElement = document.getElementById('recommendation');
+                recommendationElement.className = 'recommendation ' + recommendation;
+                
+                if (recommendation === 'buy') {
+                    recommendationElement.innerHTML = '<i class="fas fa-arrow-up"></i> BUY RECOMMENDATION';
+                } else if (recommendation === 'sell') {
+                    recommendationElement.innerHTML = '<i class="fas fa-arrow-down"></i> SELL RECOMMENDATION';
+                } else {
+                    recommendationElement.innerHTML = '<i class="fas fa-pause"></i> HOLD RECOMMENDATION';
+                }
+                
+                document.getElementById('confidenceValue').textContent = confidence + '%';
+                document.getElementById('confidenceLevel').style.width = confidence + '%';
+                
+                document.getElementById('currentPrice').textContent = currentPrice;
+                
+                document.getElementById('priceChange').textContent = (priceChange > 0 ? '+' : '') + priceChange + '%';
+                document.getElementById('priceChange').className = 'metric-value ' + (priceChange > 0 ? 'positive' : 'negative');
+                
+                document.getElementById('rsi').textContent = rsi;
+                document.getElementById('rsi').className = 'metric-value ' + (rsi < 30 ? 'positive' : rsi > 70 ? 'negative' : 'neutral');
+                
+                document.getElementById('momentum').textContent = momentum;
+                document.getElementById('momentum').className = 'metric-value ' + (momentum === 'Bullish' ? 'positive' : 'negative');
+                
+                document.getElementById('volatility').textContent = volatility;
+                document.getElementById('volatility').className = 'metric-value ' + 
+                    (volatility === 'Low' ? 'positive' : (volatility === 'Medium' ? 'neutral' : 'negative'));
+                
+                // Update chart with new data
+                const newData = [];
+                const basePrice = parseFloat(currentPrice);
+                for (let i = 0; i < 8; i++) {
+                    newData.push(basePrice - 0.002 + Math.random() * 0.004);
+                }
+                priceChart.data.datasets[0].data = newData;
+                priceChart.data.labels = generateTimeLabels(selectedTimeframe);
+                priceChart.update();
+                
+                // Update trade setup
+                const entryMin = (basePrice - 0.002).toFixed(5);
+                const entryMax = (basePrice - 0.0005).toFixed(5);
+                document.getElementById('entryPoint').value = `${entryMin} - ${entryMax}`;
+                
+                const takeProfit = recommendation === 'buy' ? (basePrice + 0.006).toFixed(5) : (basePrice - 0.006).toFixed(5);
+                document.getElementById('takeProfit').value = takeProfit;
+                
+                const stopLoss = recommendation === 'buy' ? (basePrice - 0.004).toFixed(5) : (basePrice + 0.004).toFixed(5);
+                document.getElementById('stopLoss').value = stopLoss;
+                
+                // Reset button
+                document.getElementById('analyzeBtn').innerHTML = '<i class="fas fa-chart-bar"></i> Analyze Currency Pair';
+                document.getElementById('analyzeBtn').disabled = false;
+            }, 1500);
+        }
+        
+        function getPairName(pair) {
+            const pairs = {
+                'EUR/USD': 'Euro / US Dollar',
+                'GBP/USD': 'British Pound / US Dollar',
+                'USD/JPY': 'US Dollar / Japanese Yen',
+                'USD/CHF': 'US Dollar / Swiss Franc',
+                'AUD/USD': 'Australian Dollar / US Dollar',
+                'USD/CAD': 'US Dollar / Canadian Dollar'
+            };
+            return pairs[pair] || pair;
+        }
+        
+        function getTimeframeName(timeframe) {
+            const timeframes = {
+                '1h': '1 Hour',
+                '4h': '4 Hours',
+                '1d': '1 Day',
+                '1w': '1 Week'
+            };
+            return timeframes[timeframe] || timeframe;
+        }
+        
+        function generateTimeLabels(timeframe) {
+            const now = new Date();
+            const labels = [];
+            
+            for (let i = 7; i >= 0; i--) {
+                const time = new Date(now);
+                
+                if (timeframe === '1h') {
+                    time.setHours(now.getHours() - i);
+                    labels.push(time.getHours() + ':00');
+                } else if (timeframe === '4h') {
+                    time.setHours(now.getHours() - i * 4);
+                    labels.push(time.getHours() + ':00');
+                } else if (timeframe === '1d') {
+                    time.setDate(now.getDate() - i);
+                    labels.push(time.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                } else if (timeframe === '1w') {
+                    time.setDate(now.getDate() - i * 7);
+                    labels.push(time.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                }
+            }
+            
+            return labels.reverse();
+        }
+        
+        // Initialize with sample data
+        window.onload = function() {
+            updateAnalysis();
+        };
+    </script>
+</body>
+</html>
